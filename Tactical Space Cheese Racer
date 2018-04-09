@@ -1,0 +1,866 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+
+
+
+namespace tacticalspacecheesebattle
+{
+
+    public class Player
+    {
+        public string name;
+        public int pos;
+    }
+
+
+
+
+    class Program
+    {
+        static Player[] players;
+        static Random diceRandom = new Random();
+        static int roll;
+        static bool gameOver = false;
+        static int[] cheesesquare = new int[] { 8, 15, 19, 30, 39, 45, 55, 59 };
+        static int power;
+        static int playerNumbersInGame;
+        static bool TestMode;
+        static int cheesesquareRoll;
+        static int normalresults;
+        static int droll;
+        static int sixpowerplayer;
+        static int sixthpowerRoll;
+        static bool skip;
+
+        /// <summary>
+        /// The method is used during the start of the game.
+        /// it sets out the main inputs for the game
+        /// The amount of players and their names, it also sets the player's position just outside of the board.
+        /// </summary>
+        public static void Gamereset()
+        {
+
+            Console.Clear();
+            Console.WriteLine("Hi and Welcome to tactical space cheese racer");
+
+
+            Console.WriteLine("How many player are taking part in the game?.... Enter a number between 2 and 4");
+
+
+            playerNumbersInGame = int.Parse(Console.ReadLine());
+            Console.Clear();
+
+            if (playerNumbersInGame < 2 || playerNumbersInGame > 4)
+            {
+                do
+                {
+                    Console.WriteLine("The number you have entered is not valid. Please enter a valid number between 2 and 4");
+                    playerNumbersInGame = int.Parse(Console.ReadLine());
+                }
+                while (playerNumbersInGame < 2 || playerNumbersInGame > 4);
+
+
+
+            }
+
+
+
+            players = new Player[playerNumbersInGame];
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                players[i] = new Player();
+
+                Console.WriteLine("Enter name of Player " + (i + 1));
+                players[i].name = Console.ReadLine();
+                players[i].pos = 0;
+            }
+            Console.Clear();
+
+        }
+
+        /// <summary>
+        /// This method checks the player's position against the cheese squares on the board and if the player lands on a cheese square it returns false
+        /// </summary>
+        /// The player position uses the intergar value during a loop and checks it's position<param name="playerposition"></param>
+        private static void checkCheeseSquare(int playerposition)
+        {
+
+            bool rolltactical = true;
+
+            for (int x = 0; x < cheesesquare.Length; x++)
+            {
+                if (playerposition == cheesesquare[x])
+                {
+                    rolltactical = false;
+
+                }
+
+
+
+
+            }
+
+            if (rolltactical == true)
+            {
+                tacticaldice();
+            }
+            else
+            {
+                cheesesquaretacticaldice();
+            }
+
+
+
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DiceRoll">The DiceRoll is converted to a intergar value and is checked during testmode to see if a number greater than 6 is entered</param>
+        public static void Validatenumber(string DiceRoll)
+        {
+
+            droll = 0;
+            while (true)
+            {
+                try
+                {
+                    droll = int.Parse(DiceRoll);
+                    if (droll >= 1 && droll < 70)
+                    {
+                        ///Every things fine
+                        normalresults = droll;
+                        break;
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Enter a valid number");
+                        break;
+                    }
+                }
+
+                catch { }
+
+
+            }
+
+        }
+
+        /// <summary>
+        /// The gameturn method makes a turn for every player in the array and sets up the main method being used in the game.
+        /// This method also stores the powers of the tactical dice
+        /// if the player passes or reaches square 64. That player has won
+        /// </summary>
+        public static void GameTurn()
+        {
+            ///random roll not working properly. All the players make the same dice roll
+            for (int i = 0; i < players.Length; i++)
+            {
+
+
+                Console.WriteLine(players[i].name + " turn to roll, press enter");
+
+                Console.ReadLine();
+
+                normalresults = 0;
+
+                if (TestMode == true)
+                {
+                    Console.WriteLine("input result of the dice");
+                    Validatenumber(Console.ReadLine());
+                    PlayerTurn(i, normalresults);
+
+                }
+                else
+                {
+                    normalresults = diceRandom.Next(1, 7);
+                    PlayerTurn(i, normalresults);
+                }
+                int validating6thpower = normalresults;
+
+
+
+                Console.Clear();
+
+
+
+
+
+                Console.WriteLine(players[i].name + " has moved to square  " + players[i].pos);
+
+
+
+                checkCheeseSquare(players[i].pos);
+
+
+
+                Console.Clear();
+
+
+                /// This is switch statement implements the power aspect of the tactical roll
+                /// Each case represents a certain dice roll
+                /// Within each case it holds the method to implement that power
+                switch (power)
+                {
+                    case 1:
+                        Console.WriteLine(players[i].name + " has blown their rocket engine, you're sent back to the beginning");
+                        power = 0;
+                        players[i].pos = 0;
+                        skip = false;
+                        break;
+
+                    case 2:
+                        Console.WriteLine(players[i].name + " has set off a cheese chain reaction causing the engines in all the rockets on square " + players[i].pos);
+                        Console.WriteLine(" to explode sending back every rocket  to the start position");
+                        power = 0;
+                        int r;
+                        r = players[i].pos;
+                        for (int p = 0; p < players.Length; p++)
+                        {
+                            int e = players[p].pos;
+                            if (r == e)
+                            {
+                                players[p].pos = 0;
+                                Console.WriteLine(players[p].name + " has been moved to square " + players[p].pos);
+                            }
+                        }
+                        skip = false;
+                        break;
+
+                    case 3:
+                        power = 0;
+
+
+                        for (int y = 0; y < players.Length; y++)
+                        {
+                            if (players[y].name == players[i].name)
+                            {
+                                Console.WriteLine(players[i].name + " has activated game cheese chain reaction causing the engines in every rocket on their square to explode");
+                                Console.WriteLine("sending every rocket back to the start except their own");
+                            }
+                            else if (players[y].name != players[i].name && players[y].pos == players[i].pos)
+                            {
+                                players[y].pos = 0;
+                                Console.WriteLine(players[y].name + " has moved to square " + players[y].pos);
+
+                            }
+                        }
+                        skip = false;
+                        break;
+
+
+
+
+
+
+
+                    case 4:
+                        power = 0;
+                        Console.WriteLine(players[i].name + " has moved 6 squares forward");
+                        players[i].pos = players[i].pos + 6;
+                        skip = false;
+                        break;
+
+                    case 5:
+                        power = 0;
+                        Console.WriteLine("You have got cheese transference power");
+                        Console.WriteLine("You're allowed to move to the same square as another player");
+
+
+
+                        Console.WriteLine("Enter the player number you wish to swap with");
+                        int swap = int.Parse(Console.ReadLine()) - (1);
+
+
+                        if (swap == i)
+                        {
+                            Console.WriteLine("You cannot swap with yourself");
+                            Console.WriteLine("");
+                            goto case 5;
+                        }
+
+                        players[i].pos = players[swap].pos;
+                        Console.WriteLine(players[i].name + " has moved to square " + players[i].pos);
+                        skip = false;
+                        break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    case 6:
+                        power = 0;
+                        Console.WriteLine("You have got gamma cheese transference power");
+                        Console.WriteLine("You're allowed to swap position with any rocket on the ground");
+
+
+
+
+                        Console.WriteLine("Enter the number of the player you wish to swap with");
+                        int transferplayer = int.Parse(Console.ReadLine()) - 1;
+
+                        if (transferplayer == i)
+                        {
+                            Console.Clear();
+                            Console.WriteLine("You cannot swap with yourself");
+
+
+
+                            goto case 6;
+                        }
+
+
+
+                        int x = players[transferplayer].pos;
+                        int q = players[i].pos;
+                        players[i].pos = x;
+                        players[transferplayer].pos = q;
+
+
+
+
+
+                        Console.WriteLine(players[transferplayer].name + " is now on square " + players[transferplayer].pos);
+                        skip = true;
+
+
+                        break;
+
+
+
+
+
+
+                }
+
+
+                /// This switch/case statement implements the cheesesquare powers. Where the player has to use the tactical roll
+
+                switch (cheesesquareRoll)
+                {
+                    case 1:
+                        Console.WriteLine(players[i].name + " has blown their rocket engine, you're sent back to the beginning");
+                        cheesesquareRoll = 0;
+                        players[i].pos = 0;
+                        skip = false;
+                        break;
+
+                    case 2:
+                        Console.WriteLine(players[i].name + "  has set off a cheese chain reaction causing the engines in all the rockets on square " + players[i].pos);
+                        Console.WriteLine(" to explode sending back every rocket  to the start position");
+                        cheesesquareRoll = 0;
+                        int r;
+                        r = players[i].pos;
+                        for (int p = 0; p < players.Length; p++)
+                        {
+                            int e = players[p].pos;
+                            if (r == e)
+                            {
+                                players[p].pos = 0;
+                                Console.WriteLine(players[p].name + " has been moved to square " + players[p].pos);
+                            }
+                        }
+                        skip = false;
+                        break;
+
+                    case 3:
+                        cheesesquareRoll = 0;
+
+
+                        for (int y = 0; y < players.Length; y++)
+                        {
+                            if (players[y].name == players[i].name)
+                            {
+                                Console.WriteLine(players[i].name + " has activated game cheese chain reaction causing the engines in every rocket on their square to explode ");
+                                Console.WriteLine("sending every rocket back to the start except their own");
+                            }
+                            else if (players[y].name != players[i].name && players[y].pos == players[i].pos)
+                            {
+                                players[y].pos = 0;
+                                Console.WriteLine(players[y].name + " has moved to square " + players[y].pos);
+
+                            }
+
+                        }
+                        skip = false;
+                        break;
+
+
+
+
+
+
+
+                    case 4:
+                        cheesesquareRoll = 0;
+                        Console.WriteLine(players[i].name + " has moved 6 squares forward");
+                        players[i].pos = players[i].pos + 6;
+                        skip = false;
+                        break;
+
+                    case 5:
+                        cheesesquareRoll = 0;
+                        Console.WriteLine("You have got cheese transference power");
+                        Console.WriteLine("You're allowed to move to the same square as another player");
+
+
+
+                        Console.WriteLine("Enter the player number you wish to swap with");
+                        int swap = int.Parse(Console.ReadLine()) - (1);
+
+                        if (swap == i)
+                        {
+                            Console.WriteLine("You cannot swap with yourself");
+                            goto case 5;
+                        }
+
+
+                        players[i].pos = players[swap].pos;
+                        Console.WriteLine(players[i].name + " has moved to square " + players[i].pos);
+                        skip = false;
+                        break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    case 6:
+                        Console.Clear();
+                        cheesesquareRoll = 0;
+                        Console.WriteLine("You have got gamma cheese transference power");
+                        Console.WriteLine("");
+                        Console.WriteLine("You're allowed to swap position with any rocket on the ground except your own");
+
+
+
+
+                        Console.WriteLine("Enter the number of the player you wish to swap with");
+                        int transferplayer = int.Parse(Console.ReadLine()) - 1;
+
+                        if (transferplayer == i)
+                        {
+                            Console.WriteLine("You cannot swap with yourself");
+                            goto case 6;
+                        }
+
+
+
+                        int x = players[transferplayer].pos;
+                        int q = players[i].pos;
+                        players[i].pos = x;
+                        players[transferplayer].pos = q;
+
+
+                        Console.WriteLine(players[transferplayer].name + " is now on square " + players[transferplayer].pos);
+                        skip = true;
+
+                        break;
+
+
+
+
+                }
+
+
+
+
+
+
+                if (skip == true)
+                {
+
+                }
+
+                else if (validating6thpower == 6 && skip == false)
+                {
+                    Console.ReadLine();
+                    Console.WriteLine("You have gained the 6th power");
+                    do
+                    {
+                        Console.ReadLine();
+                        Console.WriteLine("Which player do you want to use it on");
+                        sixpowerplayer = int.Parse(Console.ReadLine());
+                    }
+                    while (sixpowerplayer < 1 || sixpowerplayer > players.Length);
+
+
+
+                    sixthpower(sixpowerplayer - 1);
+                }
+
+
+
+
+
+                players[i].pos = power + players[i].pos + cheesesquareRoll;
+
+                Console.WriteLine(players[i].name + " is now on square " + players[i].pos);
+
+                Console.ReadLine();
+
+                Console.Clear();
+
+
+                if (players[i].pos >= 64)
+                {
+                    Console.WriteLine(players[i].name + " has won the game");
+
+                    Console.ReadLine();
+
+                    break;
+
+                }
+            }
+
+
+        }
+
+
+        /// <summary>
+        /// This method makes a turn for each player
+        /// </summary>
+        /// <param name="playerNO">The player's field in the array</param>
+        /// <param name="distance">The amount the player is moved by</param>
+        private static void PlayerTurn(int playerNO, int distance)
+        {
+            {
+                roll = distance;
+                Player p = players[playerNO];
+                int finalpos = p.pos + distance + power;
+
+
+                if (finalpos >= 64)
+                {
+
+                    Console.WriteLine(p.name + " has won the game");
+                    Console.ReadLine();
+                    if (AskUser("Do you want to restart the game?") == true)
+                    {
+                        Main();
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
+
+
+
+
+                }
+                else
+                {
+
+                    p.pos = finalpos;
+
+
+                }
+
+            }
+        }
+
+
+        /// <summary>
+        /// This method sets out the tactical roll and it gives two options
+        /// The first option is used during Test Mode where the user can input the number they want
+        /// The second option sets out a random tactical roll
+
+        /// </summary>
+        public static void tacticaldice()
+        {
+
+
+            if (AskUser("Do you want to roll the tactical dice....Y or N") == true)
+            {
+                if (TestMode == true)
+                {
+                    Console.WriteLine("Input result for tactical dice");
+                    Validatenumber(Console.ReadLine());
+                    power = droll;
+                }
+                else
+                {
+
+                    power = diceRandom.Next(1, 7);
+                    Console.WriteLine("You have rolled a " + power);
+                }
+            }
+            else
+            {
+                Console.WriteLine("You have chosen not to roll");
+            }
+
+
+        }
+
+        /// <summary>
+        /// This method makes a automatic roll for the player who has landed on the cheese square
+        /// </summary>
+        public static void cheesesquaretacticaldice()
+        {
+
+
+
+            cheesesquareRoll = diceRandom.Next(1, 7);
+            Console.WriteLine("You have rolled a " + cheesesquareRoll);
+
+
+
+        }
+
+
+        /// <summary>
+        /// Shows the player's position on the board
+        /// </summary>
+        static void showstatus()
+        {
+            Console.Clear();
+            Console.WriteLine("Tactical Space Cheese Racer Status Report:   ");
+            Console.WriteLine();
+
+            Console.WriteLine("There are " + players.Length + " players on the board");
+            Console.WriteLine();
+
+            for (int i = 0; i < players.Length; i++)
+            {
+
+                Console.WriteLine(players[i].name + " is on square " + players[i].pos);
+                Console.ReadLine();
+            }
+            Console.Clear();
+        }
+
+
+
+        /// <summary>
+        /// This method asks a question in the string prompt and only accepts a Y or N response
+        /// </summary>
+        /// <param name="prompt">Enter a question</param>
+        /// <returns></returns>
+        static bool AskUser(string prompt)
+        {
+            char response;
+            while (true)
+            {
+                Console.WriteLine(prompt);
+                response = char.Parse(Console.ReadLine());
+                if (response == 'Y' || response == 'y')
+                {
+
+
+                    return true;
+                }
+                else if (response == 'n' || response == 'N')
+                {
+
+                    return false;
+                }
+
+            }
+        }
+
+        static void TestModes()
+        {
+            if (AskUser("Do you want to enter TestMode?") == true)
+            {
+                TestMode = true;
+            }
+            else
+            {
+                TestMode = false;
+            }
+        }
+
+        static void sixthpower(int playerToUseOn)
+        {
+
+
+            if (TestMode == true)
+            {
+
+
+                do
+                {
+
+                    Console.WriteLine("Please enter a value for the 6th power dice,  between 1 and 6");
+                    sixthpowerRoll = int.Parse(Console.ReadLine());
+                }
+                while (sixthpowerRoll < 1 || sixthpowerRoll > 6);
+            }
+            else
+            {
+
+                sixthpowerRoll = diceRandom.Next(1, 7);
+            }
+
+
+            switch (sixthpowerRoll)
+            {
+                case 1:
+                    Console.WriteLine(players[playerToUseOn].name + " has blown their rocket engine, you're sent back to the beginning");
+                    players[playerToUseOn].pos = 0;
+                    power = 0;
+                    break;
+
+                case 2:
+                    Console.WriteLine(players[playerToUseOn].name + " has set off a cheese chain reaction causing the engines in all the rockets on square " + players[playerToUseOn].pos);
+                    Console.WriteLine(" to explode sending back every rocket  to the start position");
+                    power = 0;
+                    int r;
+                    r = players[playerToUseOn].pos;
+                    for (int p = 0; p < players.Length; p++)
+                    {
+                        int e = players[p].pos;
+                        if (r == e)
+                        {
+                            players[p].pos = 0;
+                            Console.WriteLine(players[p].name + " has been moved to square " + players[p].pos);
+                        }
+                    }
+                    break;
+                case 3:
+                    power = 0;
+
+
+                    for (int y = 0; y < players.Length; y++)
+                    {
+                        if (players[y].name == players[playerToUseOn].name)
+                        {
+                            Console.WriteLine(players[playerToUseOn].name + " has activated gamma cheese chain reaction causing the engines in every rocket on their square to explode");
+                            Console.WriteLine("sending every rocket back to the start except their own");
+                        }
+                        else if (players[y].name != players[playerToUseOn].name && players[y].pos == players[playerToUseOn].pos)
+                        {
+                            players[y].pos = 0;
+                            Console.WriteLine(players[y].name + " has moved to square " + players[y].pos);
+
+                        }
+                    }
+                    break;
+
+                case 4:
+                    power = 0;
+                    Console.WriteLine(players[playerToUseOn].name + " has moved 6 squares forward");
+                    players[playerToUseOn].pos = players[playerToUseOn].pos + 6;
+                    break;
+
+                case 5:
+
+                    power = 0;
+                    Console.WriteLine("You have got cheese transference power");
+                    Console.WriteLine("You're allowed to move to the same square as another player");
+
+
+
+                    Console.WriteLine("Enter the player number you wish to swap with");
+                    int swap = int.Parse(Console.ReadLine()) - (1);
+
+
+                    if (swap == playerToUseOn)
+                    {
+                        Console.WriteLine("You cannot swap with yourself");
+                        Console.WriteLine("");
+                        goto case 5;
+                    }
+
+                    players[playerToUseOn].pos = players[swap].pos;
+                    Console.WriteLine(players[playerToUseOn].name + " has moved to square " + players[playerToUseOn].pos);
+
+                    break;
+                case 6:
+                    power = 0;
+                    Console.WriteLine("You have got gamma cheese transference power");
+                    Console.WriteLine("You're allowed to swap position with any rocket on the ground");
+
+
+
+
+                    Console.WriteLine("Enter the number of the player you wish to swap with");
+                    int transferplayer = int.Parse(Console.ReadLine()) - 1;
+
+                    if (transferplayer == playerToUseOn)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("You cannot swap with yourself");
+
+
+
+                        goto case 6;
+                    }
+
+
+
+                    int x = players[transferplayer].pos;
+                    int q = players[playerToUseOn].pos;
+                    players[playerToUseOn].pos = x;
+                    players[transferplayer].pos = q;
+
+
+
+
+
+                    Console.WriteLine(players[transferplayer].name + " is now on square " + players[transferplayer].pos);
+
+
+
+                    break;
+
+
+
+
+
+            }
+
+        }
+
+
+
+        static void Main()
+        {
+
+            TestModes();
+
+
+            Gamereset();
+
+            while (!gameOver)
+            {
+                GameTurn();
+                showstatus();
+
+
+
+
+                Console.Write("Press Return for next turns");
+                Console.ReadLine();
+
+            }
+        }
+    }
+}
