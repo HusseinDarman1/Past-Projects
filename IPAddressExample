@@ -1,0 +1,66 @@
+using System;
+using System.Net;
+using System.Net.Sockets;
+
+namespace IPADDRESSEXAMPLE
+{
+    class IPADDRESSEXAMPLE
+    {
+        static void PrintHostInfo(string host)
+        {
+            try
+            {
+
+                IPHostEntry hostinfo;
+                // attempt to resolve dns for a given host 
+                hostinfo = Dns.Resolve(host);
+                //display the primary host name 
+                Console.WriteLine("\tCanonoical Name: " + hostinfo.HostName);
+                Console.Write("\tIP Addresses:  ");
+                foreach(IPAddress ipaddr in hostinfo.AddressList)
+                {
+                    Console.WriteLine(ipaddr.ToString());
+                }
+                Console.WriteLine();
+
+                //Display list of alias name for this host
+                Console.WriteLine("\tAliases:     ");
+                foreach (string alias in hostinfo.Aliases)
+                {
+                    Console.WriteLine(alias + " ");
+                }
+                Console.WriteLine("\n");
+
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("unable to resolve host:  " + host + "\n");
+            }
+        }
+
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                Console.WriteLine("Local Host: ");
+                string localHostName = Dns.GetHostName();
+                Console.WriteLine("\tHost Name:     " + localHostName);
+                PrintHostInfo(localHostName);
+                
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("unable to resolve host\n");
+                
+            }
+
+            foreach( string arg in args)
+            {
+                Console.WriteLine(arg + ":");
+                PrintHostInfo(arg);
+            }
+            Console.Read();
+        }
+    }
+}
